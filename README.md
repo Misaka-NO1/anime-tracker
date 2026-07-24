@@ -13,7 +13,9 @@
 
 ## 三分钟上手
 
-1. **获取代码**：Fork 或 Clone 本仓库，部署到 GitHub Pages（见下）或本地运行
+> **🪟 Windows 用户免安装**：直接在 [Releases](https://github.com/Misaka-NO1/anime-tracker/releases) 下载最新 zip，解压后双击 `追番日程表.exe` 即可（如遇 SmartScreen 提示，点「更多信息 → 仍要运行」）。然后从第 2 步开始配置。
+
+1. **获取应用**：Windows 直接用 Releases 的免安装包（见上）；其他平台 Fork 或 Clone 本仓库本地运行，或部署到 GitHub Pages（见下）
 2. **建私有数据仓库**：GitHub 新建一个 **Private** 仓库（如 `anime-tracker-data`），无需任何文件
 3. **创建 fine-grained Token**：
    - GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token
