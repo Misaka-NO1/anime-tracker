@@ -25,3 +25,7 @@ dist-ssr
 
 # Env / secrets
 .env*
+
+# Electron build artifacts
+release/
+.cache/
