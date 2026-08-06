@@ -7,22 +7,42 @@ import type { BgmSubject, SeasonInfo } from '@/types'
 
 const UA = 'anime-tracker/0.1 (https://github.com/anime-tracker/anime-tracker)'
 
-// 浏览器直连（api.bgm.tv 返回 Access-Control-Allow-Origin: *，支持跨域；
-// 系统代理由浏览器自动应用，不走 Vite proxy —— Node 代理不会用系统代理，反而会导致请求失败）
-const BASE = 'https://api.bgm.tv'
+// 首选浏览器直连（api.bgm.tv 返回 Access-Control-Allow-Origin: *，支持跨域）。
+// 但部分网络环境下浏览器并不会走系统代理（直连 api.bgm.tv 会 TCP 超时卡死），
+// 因此提供第二条通道：Vite 开发服务器的同源代理 /bgm-api（Node 端经本地
+// HTTP 代理转发，见 vite.config.ts）。两条通道自动切换并记住可用的一条。
+const DIRECT_BASE = 'https://api.bgm.tv'
+const PROXY_BASE = '/bgm-api'
+const REQUEST_TIMEOUT = 8_000 // 单次请求超时：8s（直连卡死时快速切换到代理通道）
+
+/** 同源代理只在 http(s) 页面下可用（Electron loadFile 的 file:// 环境没有开发服务器） */
+function canUseProxyPath(): boolean {
+  return typeof location !== 'undefined' && location.protocol.startsWith('http')
+}
+
+/** 上次成功的通道优先，避免每次请求都先吃一次直连超时 */
+let preferProxy = false
+
+function baseOrder(): string[] {
+  const proxy = canUseProxyPath() ? [PROXY_BASE] : []
+  return preferProxy ? [...proxy, DIRECT_BASE] : [DIRECT_BASE, ...proxy]
+}
 
 const CACHE_PREFIX = 'anime-tracker-season-cache-v2-'
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 小时
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-/** 带 UA 与 429 指数退避重试的 fetch */
+/** 带 UA、429 指数退避、超时控制、直连/代理双通道自动切换的 fetch */
 async function bgmFetch(path: string, init?: RequestInit, retries = 3): Promise<Response> {
   let lastErr: unknown = null
   for (let attempt = 0; attempt <= retries; attempt++) {
+    const order = baseOrder()
+    const base = order[attempt % order.length]
     try {
-      const res = await fetch(`${BASE}${path}`, {
+      const res = await fetch(`${base}${path}`, {
         ...init,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT),
         headers: {
           'User-Agent': UA,
           'Content-Type': 'application/json',
@@ -37,6 +57,8 @@ async function bgmFetch(path: string, init?: RequestInit, retries = 3): Promise<
       if (!res.ok) {
         throw new Error(`Bangumi API 错误（${res.status}）`)
       }
+      // 记录本次成功的通道，后续请求优先使用
+      preferProxy = base === PROXY_BASE
       return res
     } catch (e) {
       lastErr = e
