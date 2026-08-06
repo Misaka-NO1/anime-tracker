@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select'
 import { CoverImage } from '@/components/CoverImage'
 import { DetailDialog } from '@/components/DetailDialog'
+import { toast } from 'sonner'
 import { fetchSeasonAnime, type SeasonFetchResult } from '@/lib/bangumi'
 import { currentSeason, seasonList, weekdayLabel, weekdayOf } from '@/lib/season'
 import { useStore } from '@/store/useStore'
@@ -25,7 +26,7 @@ import { STATUS_LABEL, type BgmSubject } from '@/types'
 const SOURCE_LABEL: Record<SeasonFetchResult['source'], string> = {
   api: '',
   cache: '（本地缓存）',
-  'stale-cache': '（离线缓存）',
+  'stale-cache': '（本地缓存）',
   fallback: '（兜底数据源 bangumi-data，信息较少）',
 }
 
@@ -57,7 +58,15 @@ export default function SeasonPage() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetchSeasonAnime(season)
+    fetchSeasonAnime(season, {
+      force: reloadFlag > 0,
+      // 后台刷新完成：静默换上新数据；失败不打断当前展示的缓存
+      onRefresh: (r, err) => {
+        if (cancelled) return
+        if (r) setResult(r)
+        else if (err) toast.error(`后台更新新番列表失败：${err}（当前显示的是缓存数据）`)
+      },
+    })
       .then((r) => !cancelled && setResult(r))
       .catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)))
       .finally(() => !cancelled && setLoading(false))
@@ -128,7 +137,7 @@ export default function SeasonPage() {
           {result
             ? query.trim()
               ? `匹配 ${filteredItems.length} / ${result.items.length} 部`
-              : `共 ${result.items.length} 部${SOURCE_LABEL[result.source]}`
+              : `共 ${result.items.length} 部${SOURCE_LABEL[result.source]}${result.refreshing ? ' · 后台更新中…' : ''}`
             : ''}
         </span>
 
@@ -136,20 +145,22 @@ export default function SeasonPage() {
           variant="outline"
           size="sm"
           onClick={() => setReloadFlag((f) => f + 1)}
-          disabled={loading}
+          disabled={loading || result?.refreshing}
         >
-          <RefreshCw className={loading ? 'size-3.5 animate-spin' : 'size-3.5'} />
+          <RefreshCw
+            className={loading || result?.refreshing ? 'size-3.5 animate-spin' : 'size-3.5'}
+          />
           刷新
         </Button>
       </div>
 
-      {error && (
+      {error && !result && (
         <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
           加载失败：{error}。可点击「刷新」重试。
         </div>
       )}
 
-      {loading ? (
+      {loading && !result ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
             <Skeleton key={i} className="aspect-[3/5] w-full rounded-lg" />
@@ -175,7 +186,7 @@ export default function SeasonPage() {
                   onClick={() => setDetailId(s.id)}
                 >
                   <CoverImage
-                    src={s.images?.common ?? s.images?.medium}
+                    src={s.images?.medium ?? s.images?.common}
                     alt={name}
                     className="aspect-[3/4] w-full"
                   />
