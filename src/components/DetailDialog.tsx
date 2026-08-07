@@ -48,7 +48,19 @@ export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props)
     setLoadingDetail(true)
     setSubject(null)
     fetchSubject(subjectId)
-      .then(setSubject)
+      .then((s) => {
+        setSubject(s)
+        // 搜索 API 经常不返回 total_episodes/eps，导致 cachedMeta 里为 0 显示 "?"。
+        // 详情 API 会返回完整数据 —— 回写 cachedMeta 让列表页也能正确显示总集数。
+        if (tracking) {
+          const fetchedTotal = s.total_episodes || s.eps || 0
+          if (fetchedTotal > 0 && tracking.cachedMeta.totalEpisodes === 0) {
+            updateTracking(subjectId, {
+              cachedMeta: { ...tracking.cachedMeta, totalEpisodes: fetchedTotal },
+            })
+          }
+        }
+      })
       .catch(() => {
         if (fallback) setSubject(fallback as BgmSubject)
       })
