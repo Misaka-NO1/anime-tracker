@@ -21,8 +21,12 @@
     "directories": {
       "output": "release"
     },
+    "mac": {
+      "icon": "icon.icns"
+    },
     "win": {
-      "target": "zip"
+      "target": "zip",
+      "icon": "icon.ico"
     },
     "compression": "maximum"
   },
