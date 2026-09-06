@@ -1,0 +1,9 @@
+# 统一换行符：Mac/Windows 双端开发不再互相污染 diff
+* text=auto eol=lf
+
+# 二进制文件不参与换行转换
+*.ico binary
+*.icns binary
+*.png binary
+*.jpg binary
+*.zip binary

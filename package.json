@@ -1,7 +1,7 @@
 {
   "name": "anime-tracker",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -9,11 +9,13 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "dist:zip": "npm run build && electron-builder --win zip"
+    "dist:win": "npm run build && electron-builder --win zip",
+    "dist:mac": "npm run build && electron-builder --mac zip"
   },
   "build": {
     "appId": "com.misaka.anime-tracker",
     "productName": "追番日程表",
+    "artifactName": "anime-tracker-${version}-${os}.${ext}",
     "files": [
       "dist/**/*",
       "electron/**/*"
@@ -22,13 +24,14 @@
       "output": "release"
     },
     "mac": {
+      "target": "zip",
       "icon": "icon.icns"
     },
     "win": {
       "target": "zip",
       "icon": "icon.ico"
     },
-    "compression": "maximum"
+    "compression": "normal"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

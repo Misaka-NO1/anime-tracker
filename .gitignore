@@ -28,4 +28,6 @@ dist-ssr
 
 # Electron build artifacts
 release/
+release-win/
+release-mac/
 .cache/
