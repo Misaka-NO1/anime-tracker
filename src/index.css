@@ -73,3 +73,80 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ===== 桌面端（Electron）无边框窗口 ===== */
+@layer base {
+  /* Win11 Mica / macOS vibrancy：页面用八成不透的磨砂白，
+     系统材质只隐约透出色调——避免深色壁纸上灰字看不清、白卡片刺眼 */
+  html.glass body {
+    background: rgba(255, 255, 255, 0.82);
+  }
+}
+
+@layer components {
+  /* 可拖拽标题栏区域 */
+  .app-region-drag {
+    -webkit-app-region: drag;
+  }
+  .app-region-no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  /* 液态玻璃标题栏：较高不透明度保证文字可读 + 背景模糊 + 顶部高光描边 */
+  .glass-header {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      rgba(255, 255, 255, 0.52) 45%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  /* 卡片玻璃化：半透磨砂白，透明度由设置页滑杆控制（--card-alpha）。
+     不加 backdrop-filter——170+ 张卡片各自模糊会掉帧，靠透明度出质感。
+     桌面版（glass）与设置了自定义背景的浏览器版（has-bg）都生效 */
+  html.glass [data-slot='card'],
+  html.has-bg [data-slot='card'] {
+    background: rgba(255, 255, 255, var(--card-alpha, 0.5));
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  /* 弹窗玻璃化：半透 + 真模糊（弹窗同时只开一个，性能无压力），
+     透明度由设置页滑杆控制（--dialog-alpha） */
+  html.glass [data-slot='dialog-content'],
+  html.has-bg [data-slot='dialog-content'] {
+    background: rgba(255, 255, 255, var(--dialog-alpha, 0.62));
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  /* 弹窗遮罩调淡并加轻模糊，背景图隐约可见 */
+  html.glass [data-slot='dialog-overlay'],
+  html.has-bg [data-slot='dialog-overlay'] {
+    background: rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  /* 下拉菜单玻璃化（季度切换 / 状态切换等） */
+  html.glass [data-slot='select-content'],
+  html.glass [data-slot='popover-content'],
+  html.has-bg [data-slot='select-content'],
+  html.has-bg [data-slot='popover-content'] {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    border-color: rgba(255, 255, 255, 0.55);
+  }
+}

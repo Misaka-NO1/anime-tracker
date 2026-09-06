@@ -1,8 +1,8 @@
 // ===== 设置页：GitHub Token / 用户名 / 仓库名，测试连接 =====
 
-import { useState } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle2, Info, Loader2, XCircle } from 'lucide-react'
+import { CheckCircle2, ImagePlus, Info, Loader2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,7 +14,16 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
 import { testConnection, type TestResult } from '@/lib/github'
+import {
+  clearBackground,
+  setBackgroundFromFile,
+  setBackgroundOverlay,
+  setCardAlpha,
+  setDialogAlpha,
+} from '@/lib/background'
+import { useBackground } from '@/hooks/useBackground'
 import { useStore } from '@/store/useStore'
 
 export default function SetupPage() {
@@ -26,6 +35,21 @@ export default function SetupPage() {
   const [repo, setRepo] = useState(config?.repo ?? '')
   const [testing, setTesting] = useState(false)
   const [result, setResult] = useState<TestResult | null>(null)
+
+  const fileRef = useRef<HTMLInputElement>(null)
+  const { image: bg, overlay, cardAlpha, dialogAlpha } = useBackground()
+
+  const handlePickBg = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      await setBackgroundFromFile(file)
+      toast.success('背景已更新')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '设置背景失败')
+    }
+  }
 
   const filled = token.trim() && owner.trim() && repo.trim()
 
@@ -138,6 +162,98 @@ export default function SetupPage() {
               </Button>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">自定义背景</CardTitle>
+          <CardDescription>
+            选一张本地图片作为应用背景，会自动叠加磨砂遮罩保证文字清晰。图片压缩后仅保存在本机，不会上传。
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {bg && (
+            <img
+              src={bg}
+              alt="当前背景预览"
+              className="h-32 w-full rounded-md border object-cover"
+            />
+          )}
+          {bg && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <Label>遮罩浓度</Label>
+                <span className="text-muted-foreground">{Math.round(overlay * 100)}%</span>
+              </div>
+              <Slider
+                value={[Math.round(overlay * 100)]}
+                min={20}
+                max={90}
+                step={5}
+                onValueChange={([v]) => setBackgroundOverlay(v / 100)}
+              />
+              <p className="text-xs text-muted-foreground">
+                越低背景图越清晰，越高文字越清楚。拖动即生效。
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-2 border-t pt-3">
+            <div className="flex items-center justify-between text-sm">
+              <Label>卡片不透明度</Label>
+              <span className="text-muted-foreground">{Math.round(cardAlpha * 100)}%</span>
+            </div>
+            <Slider
+              value={[Math.round(cardAlpha * 100)]}
+              min={20}
+              max={95}
+              step={5}
+              onValueChange={([v]) => setCardAlpha(v / 100)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <Label>弹窗不透明度</Label>
+              <span className="text-muted-foreground">{Math.round(dialogAlpha * 100)}%</span>
+            </div>
+            <Slider
+              value={[Math.round(dialogAlpha * 100)]}
+              min={20}
+              max={95}
+              step={5}
+              onValueChange={([v]) => setDialogAlpha(v / 100)}
+            />
+            <p className="text-xs text-muted-foreground">
+              不透明度越低越透，玻璃感越强；太低可能影响阅读。
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => fileRef.current?.click()}>
+              <ImagePlus className="size-4" />
+              {bg ? '更换图片' : '选择图片'}
+            </Button>
+            {bg && (
+              <Button
+                variant="ghost"
+                className="text-destructive"
+                onClick={() => {
+                  clearBackground()
+                  toast.success('已恢复默认背景')
+                }}
+              >
+                恢复默认
+              </Button>
+            )}
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePickBg}
+          />
         </CardContent>
       </Card>
 
