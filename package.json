@@ -1,7 +1,7 @@
 {
   "name": "anime-tracker",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -9,8 +9,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "dist:win": "npm run build && electron-builder --win zip",
-    "dist:mac": "npm run build && electron-builder --mac zip"
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "release": "npm run build && electron-builder --win --mac --publish always"
   },
   "build": {
     "appId": "com.misaka.anime-tracker",
@@ -23,13 +24,24 @@
     "directories": {
       "output": "release"
     },
+    "publish": {
+      "provider": "github",
+      "owner": "Misaka-NO1",
+      "repo": "anime-tracker"
+    },
     "mac": {
       "target": "zip",
       "icon": "icon.icns"
     },
     "win": {
-      "target": "zip",
+      "target": "nsis",
       "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
     },
     "compression": "normal"
   },
@@ -65,6 +77,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "electron-updater": "^6.8.9",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.562.0",

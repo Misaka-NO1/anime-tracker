@@ -13,9 +13,11 @@
 
 ## 三分钟上手
 
-> **🪟 Windows 用户免安装**：直接在 [Releases](https://github.com/Misaka-NO1/anime-tracker/releases) 下载最新 zip，解压后双击 `追番日程表.exe` 即可（如遇 SmartScreen 提示，点「更多信息 → 仍要运行」）。然后从第 2 步开始配置。
+> **🪟 Windows 用户**：直接在 [Releases](https://github.com/Misaka-NO1/anime-tracker/releases) 下载最新 `anime-tracker-x.y.z-win.exe`，双击即装即用（如遇 SmartScreen 提示，点「更多信息 → 仍要运行」）。然后从第 2 步开始配置。
+>
+> **🍎 macOS 用户**：下载 `anime-tracker-x.y.z-mac.zip`，解压后把「追番日程表」拖入「应用程序」。
 
-1. **获取应用**：Windows 直接用 Releases 的免安装包（见上）；其他平台 Fork 或 Clone 本仓库本地运行，或部署到 GitHub Pages（见下）
+1. **获取应用**：桌面端从 [Releases](https://github.com/Misaka-NO1/anime-tracker/releases) 下载安装包；也可 Fork 或 Clone 本仓库本地运行，或部署到 GitHub Pages（见下）
 2. **建私有数据仓库**：GitHub 新建一个 **Private** 仓库（如 `anime-tracker-data`），无需任何文件
 3. **创建 fine-grained Token**：
    - GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token
@@ -46,6 +48,21 @@ npm run build    # 产物输出到 dist/
 1. `vite.config.ts` 中已设置 `base: './'`，可直接部署到任意子路径
 2. 安装 `gh-pages` 包后 `npm run build && npx gh-pages -d dist`；或用 GitHub Actions 发布 `dist`
 3. 应用使用 HashRouter，子路由不会 404
+
+## 应用内更新
+
+- 🪟 **Windows**：全自动。启动后后台检查新版本并静默下载，下载完成后提示「重启并安装」；即使无视提示，退出应用时也会自动装好，下次打开即是新版。
+- 🍎 **macOS**：应用未做签名（Apple 开发者签名需付费），系统不允许应用静默替换自己，因此采用「检查新版本 → 展示更新内容 → 一键前往 Releases 下载页」的方式。设置页可随时手动「检查更新」。
+
+## 发布新版本（维护者）
+
+```bash
+# 1. 修改 package.json 的 version
+# 2. 一条命令构建双平台安装包并上传到 GitHub Releases（需设置 GH_TOKEN，Contents 读写权限）
+GH_TOKEN=你的token npm run release
+```
+
+构建产物（`anime-tracker-版本-win.exe` / `anime-tracker-版本-mac.zip`）连同 `latest.yml` / `latest-mac.yml` 更新清单会自动上传到 GitHub Releases；electron-builder 会自动创建对应的 tag 和草稿 Release，上传完成后到 Releases 页面点击 Publish 即可。之后已安装的应用会在启动时检查到新版本。
 
 ## 数据说明
 

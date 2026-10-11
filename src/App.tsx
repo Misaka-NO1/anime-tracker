@@ -8,6 +8,7 @@ import WatchingPage from '@/pages/WatchingPage'
 import CalendarPage from '@/pages/CalendarPage'
 import BacklogPage from '@/pages/BacklogPage'
 import NotesPage from '@/pages/NotesPage'
+import { UpdaterToasts } from '@/hooks/useUpdater'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         </Route>
       </Routes>
       <Toaster richColors position="top-center" />
+      <UpdaterToasts />
     </ConfirmProvider>
   )
 }

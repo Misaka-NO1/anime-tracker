@@ -27,6 +27,7 @@ import {
 import { useBackground } from '@/hooks/useBackground'
 import { useConfirm } from '@/components/ConfirmProvider'
 import { useStore } from '@/store/useStore'
+import { UpdaterCard } from '@/components/UpdaterCard'
 
 export default function SetupPage() {
   const { config, setConfig, clearConfig, loadData } = useStore()
@@ -266,6 +267,8 @@ export default function SetupPage() {
           />
         </CardContent>
       </Card>
+
+      <UpdaterCard />
 
       <Card>
         <CardHeader>

@@ -19,4 +19,19 @@ contextBridge.exposeInMainWorld('desktop', {
     ipcRenderer.on('win:maximized', listener)
     return () => ipcRenderer.removeListener('win:maximized', listener)
   },
+  updater: {
+    /** 手动检查更新（传 true 才会弹错误提示）；启动时的静默检查由主进程自己做 */
+    check: (manual) => ipcRenderer.invoke('updater:check', Boolean(manual)),
+    getVersion: () => ipcRenderer.invoke('updater:get-version'),
+    /** Windows：重启并安装已下载的新版本 */
+    install: () => ipcRenderer.send('updater:install'),
+    /** 打开 GitHub Releases 下载页（macOS 更新方式） */
+    openReleases: () => ipcRenderer.send('updater:open-releases'),
+    /** 订阅更新状态变化；返回取消订阅函数 */
+    onStatus: (cb) => {
+      const listener = (_event, status) => cb(status)
+      ipcRenderer.on('updater:status', listener)
+      return () => ipcRenderer.removeListener('updater:status', listener)
+    },
+  },
 })

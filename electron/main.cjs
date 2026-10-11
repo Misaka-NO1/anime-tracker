@@ -3,6 +3,7 @@
 const { app, BrowserWindow, shell, ipcMain } = require('electron')
 const path = require('path')
 const os = require('os')
+const updater = require('./updater.cjs')
 
 const isMac = process.platform === 'darwin'
 // Mica/Acrylic 材质仅 Windows 11（build 22000+）可用；Win10 回退为纯色 + CSS 玻璃
@@ -75,6 +76,7 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     createWindow()
+    updater.init()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
