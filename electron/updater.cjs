@@ -1,7 +1,7 @@
 // ===== 应用内更新 =====
 // Windows：electron-updater + NSIS 安装包，全自动（检查 → 后台下载 → 重启安装）
-// macOS：应用未签名，系统不允许静默替换已安装应用，改为调 GitHub Releases API
-//        检查新版本，提示用户一键前往下载页（若日后签名，可切回 electron-updater）
+// macOS：应用未签名，系统不允许静默替换已安装应用，改为访问 Releases 页面的 302 跳转解析最新版本
+//        （非 API 端点、无匿名限流），提示用户一键前往下载页（若日后签名，可切回 electron-updater）
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const { autoUpdater } = require('electron-updater')
 
@@ -56,18 +56,26 @@ function setupElectronUpdater() {
   })
 }
 
-// macOS：/releases/latest 不含 draft 和 prerelease
+// macOS:走 Releases 页面的 302 跳转拿最新版本号(非 API 端点,无限流;
+// API 端点匿名仅 60 次/小时/IP,共享出口 IP 上常年被打满,403 会误报成"获取失败")
 async function checkMacRelease() {
-  const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/releases/latest`, {
-    headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'anime-tracker-updater' },
-  })
-  if (!res.ok) throw new Error(`GitHub API 请求失败（HTTP ${res.status}）`)
-  const release = await res.json()
-  console.log(`[updater] GitHub 最新发布 ${release.tag_name}，当前版本 ${app.getVersion()}`)
-  if (compareVersions(release.tag_name, app.getVersion()) <= 0) return null
+  let res
+  try {
+    res = await fetch(RELEASES_URL, {
+      headers: { 'User-Agent': 'anime-tracker-updater' },
+    })
+  } catch {
+    throw new Error('网络错误，无法连接 GitHub，请检查网络后重试')
+  }
+  if (!res.ok) throw new Error(`GitHub 页面请求失败（HTTP ${res.status}），请稍后重试`)
+  // 跟随 302 后的最终地址形如 .../releases/tag/v1.2.2
+  const m = res.url.match(/\/releases\/tag\/(v\d+\.\d+\.\d+)/)
+  if (!m) throw new Error('未能从 Releases 页面解析出最新版本号')
+  const latestTag = m[1]
+  console.log(`[updater] GitHub 最新发布 ${latestTag}，当前版本 ${app.getVersion()}`)
+  if (compareVersions(latestTag, app.getVersion()) <= 0) return null
   return {
-    version: String(release.tag_name).replace(/^v/, ''),
-    notes: String(release.body || ''),
+    version: latestTag.replace(/^v/, ''),
     url: RELEASES_URL,
   }
 }
