@@ -34,6 +34,7 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-4">
+      <h1 className="text-2xl font-bold tracking-tight">放送表</h1>
       <p className="text-sm text-muted-foreground">
         只显示「在看 / 想看」的番；补旧番区不进入放送表。
       </p>
@@ -74,7 +75,7 @@ export default function CalendarPage() {
                         role="button"
                         tabIndex={0}
                         aria-label={`查看《${t.cachedMeta.nameCn}》详情`}
-                        className="cursor-pointer p-2 text-left transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        className="cursor-pointer p-2 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         onClick={() => setDetailId(t.subjectId)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {

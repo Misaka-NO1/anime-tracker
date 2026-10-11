@@ -107,6 +107,7 @@ export default function SeasonPage() {
 
   return (
     <div className="space-y-4">
+      <h1 className="text-2xl font-bold tracking-tight">本季新番</h1>
       <div className="flex flex-wrap items-center gap-3">
         <Select value={seasonId} onValueChange={setSeasonId}>
           <SelectTrigger className="w-40">

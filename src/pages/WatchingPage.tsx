@@ -63,7 +63,7 @@ export default function WatchingPage() {
     const total = item.cachedMeta.totalEpisodes
     const percent = total > 0 ? Math.min(100, Math.round((item.progress / total) * 100)) : 0
     return (
-      <Card key={item.subjectId} className="flex flex-row gap-3 p-3">
+      <Card key={item.subjectId} className="flex flex-row gap-3 p-3 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md">
         <button onClick={() => setDetailId(item.subjectId)} className="shrink-0">
           <CoverImage
             src={item.cachedMeta.cover}
@@ -138,6 +138,7 @@ export default function WatchingPage() {
 
   return (
     <div className="space-y-4">
+      <h1 className="text-2xl font-bold tracking-tight">我的追番</h1>
       {data.tracking.length === 0 ? (
         <div className="py-20 text-center text-muted-foreground">
           <p>还没有追任何番。</p>

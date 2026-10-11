@@ -315,3 +315,24 @@ html.pure [data-slot='popover-content'] {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
+
+/* ===== 骨架屏品牌色微光 ===== */
+[data-slot='skeleton'] {
+  position: relative;
+  overflow: hidden;
+}
+[data-slot='skeleton']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 138, 92, 0.15), transparent);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+@keyframes skeleton-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}

@@ -60,9 +60,8 @@ export default function NotesPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div className="flex items-center gap-2">
-        <BookOpenText className="size-5 text-primary" />
-        <h1 className="text-lg font-bold">追番日记</h1>
+      <div className="flex items-baseline gap-2">
+        <h1 className="text-2xl font-bold tracking-tight">追番日记</h1>
         <span className="text-sm text-muted-foreground">共 {entries.length} 条</span>
       </div>
 
@@ -77,9 +76,16 @@ export default function NotesPage() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="space-y-3">
+        <div className="relative space-y-3 pl-6">
+          {/* 时间轴竖线 */}
+          <div aria-hidden className="absolute inset-y-2 left-[8px] w-px bg-border" />
           {entries.map((e) => (
-            <Card
+            <div key={e.id} className="relative">
+              <span
+                aria-hidden
+                className="absolute left-[3px] top-6 z-10 size-2.5 rounded-full bg-primary ring-4 ring-background"
+              />
+              <Card
               key={e.id}
               role="button"
               tabIndex={0}
@@ -111,7 +117,8 @@ export default function NotesPage() {
                 </p>
                 <p className="mt-1 whitespace-pre-wrap break-words text-sm">{e.text}</p>
               </div>
-            </Card>
+              </Card>
+            </div>
           ))}
         </div>
       )}
