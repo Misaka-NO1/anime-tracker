@@ -3,9 +3,10 @@
 
 import { useEffect } from 'react'
 import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom'
-import { Clapperboard, Settings, CloudUpload, Loader2 } from 'lucide-react'
+import { Settings, CloudUpload, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { TitleBarControls } from '@/components/TitleBar'
+import logo from '@/assets/logo.png'
 import { useBackground } from '@/hooks/useBackground'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { useStore } from '@/store/useStore'
@@ -89,8 +90,8 @@ export function Layout() {
             to="/season"
             className={cn('flex items-center gap-2 font-bold', desktop && 'app-region-no-drag')}
           >
-            <Clapperboard className="size-5 text-primary" />
-            <span>追番日程表</span>
+            <img src={logo} alt="番见" className="size-7 rounded-lg" />
+            <span>番见</span>
           </NavLink>
 
           <nav

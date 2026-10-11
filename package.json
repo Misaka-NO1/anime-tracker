@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "com.misaka.anime-tracker",
-    "productName": "追番日程表",
+    "productName": "番见",
     "artifactName": "anime-tracker-${version}-${os}.${ext}",
     "files": [
       "dist/**/*",
