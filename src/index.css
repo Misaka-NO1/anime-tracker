@@ -10,8 +10,9 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    /* 品牌主色:番见图标的粉橙渐变中间调 */
+    --primary: 17 100% 68%;
+    --primary-foreground: 20 50% 12%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
@@ -22,7 +23,10 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --ring: 17 100% 68%;
+    --brand-from: #FF7E8E;
+    --brand-to: #FFA94D;
+    --brand: #FF8A5C;
     --radius: 0.625rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -41,8 +45,9 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    /* 暗色同用品牌主色,文字用深暖色保证对比 */
+    --primary: 17 100% 68%;
+    --primary-foreground: 20 50% 12%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
@@ -53,7 +58,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --ring: 17 100% 68%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -105,15 +110,26 @@
     background: rgba(255, 255, 255, 0.82);
   }
   html.glass.dark body::before {
-    background: rgba(24, 24, 30, 0.85);
+    background: rgba(22, 18, 26, 0.85);
   }
 }
 
 @layer components {
-  /* 评分/我的评分星星：统一走主题令牌，避免散落的硬编码 Tailwind 色板 */
+  /* 评分/我的评分星星：统一走品牌主色，避免散落的硬编码 Tailwind 色板 */
   .star-icon {
-    color: hsl(38 92% 50%);
-    fill: hsl(38 92% 50%);
+    color: var(--brand);
+    fill: var(--brand);
+  }
+
+  /* 品牌渐变：番见图标同源（粉→橙） */
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+  }
+  .text-brand-gradient {
+    background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   /* 可拖拽标题栏区域 */
@@ -171,12 +187,12 @@
   }
 
   /* 卡片玻璃化：半透磨砂，透明度由设置页滑杆控制（--card-alpha），
-     并用 max() 兜底 50% 最低遮盖——拖得再低也保证正文可读。
+     并用 max() 兜底 72% 最低遮盖——拖得再低也保证正文可读。
      不加 backdrop-filter——170+ 张卡片各自模糊会掉帧，靠透明度出质感。
      桌面版（glass）与设置了自定义背景的浏览器版（has-bg）都生效 */
   html.glass [data-slot='card'],
   html.has-bg [data-slot='card'] {
-    background: rgba(255, 255, 255, max(var(--card-alpha, 0.5), 0.5));
+    background: rgba(255, 255, 255, max(var(--card-alpha, 0.5), 0.72));
     border-color: rgba(255, 255, 255, 0.6);
     box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.04),
@@ -184,7 +200,7 @@
   }
   html.glass.dark [data-slot='card'],
   html.has-bg.dark [data-slot='card'] {
-    background: rgba(26, 26, 32, max(var(--card-alpha, 0.5), 0.5));
+    background: rgba(24, 18, 28, max(var(--card-alpha, 0.5), 0.72));
     border-color: rgba(255, 255, 255, 0.12);
     box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.3),
@@ -205,7 +221,7 @@
   }
   html.glass.dark [data-slot='dialog-content'],
   html.has-bg.dark [data-slot='dialog-content'] {
-    background: rgba(26, 26, 32, max(var(--dialog-alpha, 0.62), 0.55));
+    background: rgba(24, 18, 28, max(var(--dialog-alpha, 0.62), 0.55));
     border-color: rgba(255, 255, 255, 0.12);
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.45),
@@ -258,4 +274,44 @@
   html.has-bg.dark [data-slot='progress'] {
     background: rgba(255, 255, 255, 0.15);
   }
+}
+
+/* ===== 纯净模式（方案乙）：无背景图、全实底，品牌色保留 ===== */
+/* 置于 layer 之外，天然压过上方所有玻璃/背景规则 */
+html.pure .app-shell {
+  background-image: none !important;
+  background-color: hsl(var(--background)) !important;
+}
+html.glass.pure body {
+  background: hsl(var(--background));
+}
+html.pure body::before {
+  display: none !important;
+}
+html.pure [data-slot='card'] {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+html.pure [data-slot='dialog-content'] {
+  background: hsl(var(--popover)) !important;
+  border-color: hsl(var(--border)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.pure [data-slot='dialog-overlay'] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.pure [data-slot='input'],
+html.pure [data-slot='select-trigger'] {
+  background: hsl(var(--background)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+html.pure [data-slot='select-content'],
+html.pure [data-slot='popover-content'] {
+  background: hsl(var(--popover)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }

@@ -29,16 +29,17 @@ export function Layout() {
   const glass = !!desktop?.glass
   const isMac = desktop?.platform === 'darwin'
   // 自定义背景图（设置页可更换），overlay 为磨砂遮罩浓度（可调）；暗色模式下遮罩改用黑色
-  const { image: bg, overlay, cardAlpha, dialogAlpha } = useBackground()
+  const { image: bg, overlay, cardAlpha, dialogAlpha, material } = useBackground()
   const scheme = useColorScheme()
 
-  // 把外观偏好同步为 CSS 变量与 has-bg 标记（设置页拖滑杆实时生效）
+  // 把外观偏好同步为 CSS 变量与 has-bg/pure 标记（设置页拖滑杆/切模式实时生效）
   useEffect(() => {
     const el = document.documentElement
     el.classList.toggle('has-bg', !!bg)
+    el.classList.toggle('pure', material === 'pure')
     el.style.setProperty('--card-alpha', String(cardAlpha))
     el.style.setProperty('--dialog-alpha', String(dialogAlpha))
-  }, [bg, cardAlpha, dialogAlpha])
+  }, [bg, cardAlpha, dialogAlpha, material])
 
   // 首次进入（已配置）时拉取远端数据
   useEffect(() => {
@@ -57,13 +58,15 @@ export function Layout() {
 
   return (
     <div
-      className={cn('min-h-screen', !glass && !bg && 'bg-background')}
+      className={cn('app-shell min-h-screen', !glass && !bg && 'bg-background')}
       style={
         bg
           ? (() => {
               const rgb = scheme === 'dark' ? '0, 0, 0' : '255, 255, 255'
+              // 暗色下遮罩设 65% 下限：滑杆拖得再低，文字也保持可读
+              const effective = scheme === 'dark' ? Math.max(overlay, 0.65) : overlay
               return {
-                backgroundImage: `linear-gradient(rgba(${rgb}, ${overlay}), rgba(${rgb}, ${overlay})), url("${bg}")`,
+                backgroundImage: `linear-gradient(rgba(${rgb}, ${effective}), rgba(${rgb}, ${effective})), url("${bg}")`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundAttachment: 'fixed',
@@ -91,7 +94,7 @@ export function Layout() {
             className={cn('flex items-center gap-2 font-bold', desktop && 'app-region-no-drag')}
           >
             <img src={logo} alt="番见" className="size-7 rounded-lg" />
-            <span>番见</span>
+            <span className="text-brand-gradient">番见</span>
           </NavLink>
 
           <nav

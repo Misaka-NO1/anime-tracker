@@ -6,6 +6,7 @@ import {
   getBackgroundOverlay,
   getCardAlpha,
   getDialogAlpha,
+  getMaterialMode,
   onBackgroundChange,
 } from '@/lib/background'
 
@@ -15,6 +16,7 @@ function read() {
     overlay: getBackgroundOverlay(),
     cardAlpha: getCardAlpha(),
     dialogAlpha: getDialogAlpha(),
+    material: getMaterialMode(),
   }
 }
 

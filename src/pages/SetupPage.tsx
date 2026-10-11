@@ -23,11 +23,13 @@ import {
   setBackgroundOverlay,
   setCardAlpha,
   setDialogAlpha,
+  setMaterialMode,
 } from '@/lib/background'
 import { useBackground } from '@/hooks/useBackground'
 import { useConfirm } from '@/components/ConfirmProvider'
 import { useStore } from '@/store/useStore'
 import { UpdaterCard } from '@/components/UpdaterCard'
+import { cn } from '@/lib/utils'
 
 export default function SetupPage() {
   const { config, setConfig, clearConfig, loadData } = useStore()
@@ -41,7 +43,7 @@ export default function SetupPage() {
   const [result, setResult] = useState<TestResult | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
-  const { image: bg, overlay, cardAlpha, dialogAlpha } = useBackground()
+  const { image: bg, overlay, cardAlpha, dialogAlpha, material } = useBackground()
 
   const handlePickBg = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -183,10 +185,46 @@ export default function SetupPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle className="text-base">外观模式</CardTitle>
+          <CardDescription>
+            玻璃模式透出你的自定义背景图；纯净模式为素净实底、不显示背景图。
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-3">
+          {(
+            [
+              { mode: 'glass', title: '玻璃模式', desc: '背景图与磨砂质感' },
+              { mode: 'pure', title: '纯净模式', desc: '素净实底，聚焦内容' },
+            ] as const
+          ).map((opt) => (
+            <button
+              key={opt.mode}
+              onClick={() => setMaterialMode(opt.mode)}
+              className={cn(
+                'rounded-lg border p-3 text-left transition-colors',
+                material === opt.mode
+                  ? 'border-transparent ring-2 ring-primary'
+                  : 'hover:bg-accent/50',
+              )}
+            >
+              <p className="text-sm font-medium">{opt.title}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{opt.desc}</p>
+            </button>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-base">自定义背景</CardTitle>
           <CardDescription>
             选一张本地图片作为应用背景，会自动叠加磨砂遮罩保证文字清晰。图片压缩后仅保存在本机，不会上传。
           </CardDescription>
+          {material === 'pure' && (
+            <p className="text-xs text-muted-foreground">
+              当前为纯净模式，背景图暂不显示；切回玻璃模式后以下设置生效。
+            </p>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
           {bg && (

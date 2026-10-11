@@ -5,6 +5,7 @@ const BG_KEY = 'anime-tracker-bg'
 const BG_OPACITY_KEY = 'anime-tracker-bg-opacity'
 const CARD_ALPHA_KEY = 'anime-tracker-card-alpha'
 const DIALOG_ALPHA_KEY = 'anime-tracker-dialog-alpha'
+const APPEARANCE_KEY = 'anime-tracker-appearance'
 const BG_EVENT = 'anime-tracker-bg-changed'
 /** 默认遮罩浓度（白色不透明度）：越低背景图越清晰 */
 const DEFAULT_OVERLAY = 0.55
@@ -13,6 +14,26 @@ export const MIN_OVERLAY = 0.45
 /** 卡片/弹窗默认不透明度：越低越透 */
 const DEFAULT_CARD_ALPHA = 0.5
 const DEFAULT_DIALOG_ALPHA = 0.62
+
+/** 外观材质：glass = 玻璃模式（透出背景图），pure = 纯净模式（素净实底） */
+export type MaterialMode = 'glass' | 'pure'
+
+export function getMaterialMode(): MaterialMode {
+  try {
+    return localStorage.getItem(APPEARANCE_KEY) === 'pure' ? 'pure' : 'glass'
+  } catch {
+    return 'glass'
+  }
+}
+
+export function setMaterialMode(mode: MaterialMode): void {
+  try {
+    localStorage.setItem(APPEARANCE_KEY, mode)
+  } catch {
+    // localStorage 不可用时静默降级为默认玻璃模式
+  }
+  notify()
+}
 
 export function getBackground(): string | null {
   try {
