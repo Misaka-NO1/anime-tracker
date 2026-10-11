@@ -206,19 +206,17 @@ export default function SeasonPage() {
             const tracked = trackedMap.get(s.id)
             const name = s.name_cn || s.name
             return (
-              <Card key={s.id} className="group overflow-hidden p-0">
+              <Card key={s.id} className="group relative overflow-hidden p-0">
                 <button
-                  className="relative block w-full text-left"
+                  aria-label={`查看《${name}》详情`}
+                  className="relative block w-full"
                   onClick={() => setDetailId(s.id)}
                 >
                   <CoverImage
                     src={s.images?.medium ?? s.images?.common}
                     alt={name}
-                    className="aspect-[3/4] w-full"
+                    className="aspect-[3/4] w-full transition-transform duration-200 group-hover:scale-[1.03]"
                   />
-                  {tracked && (
-                    <Badge className="absolute top-2 left-2">{STATUS_LABEL[tracked.status]}</Badge>
-                  )}
                   {s.rating?.score ? (
                     <Badge variant="secondary" className="absolute top-2 right-2 gap-0.5">
                       <Star className="star-icon size-3" />
@@ -227,13 +225,24 @@ export default function SeasonPage() {
                   ) : null}
                 </button>
 
-                <div className="space-y-1.5 p-3">
-                  <p className="line-clamp-2 min-h-10 text-sm font-medium" title={name}>
+                {/* 底部信息遮罩:不拦截点击,封面整面可点开详情 */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-3 pt-10">
+                  <p className="line-clamp-2 text-sm font-medium text-white" title={name}>
                     {name}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white/75">
                     {s.date ? `${s.date} · ${weekdayLabel(weekdayOf(s.date))}` : '首播日期待定'}
                   </p>
+                </div>
+
+                {tracked && (
+                  <Badge className="pointer-events-none absolute left-2 top-2 border-transparent bg-primary/80 text-primary-foreground backdrop-blur-sm">
+                    {STATUS_LABEL[tracked.status]}
+                  </Badge>
+                )}
+
+                {/* 追番操作浮层:桌面端 hover/键盘聚焦浮现,触屏常显 */}
+                <div className="absolute inset-x-3 bottom-3 z-10 transition-all duration-200 sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100">
                   {tracked ? (
                     <Button
                       size="sm"
@@ -244,7 +253,7 @@ export default function SeasonPage() {
                       已追 · {STATUS_LABEL[tracked.status]}
                     </Button>
                   ) : (
-                    <Button size="sm" variant="secondary" className="w-full" onClick={() => handleTrack(s)}>
+                    <Button size="sm" className="w-full" onClick={() => handleTrack(s)}>
                       <Plus className="size-3.5" /> 追这部
                     </Button>
                   )}
