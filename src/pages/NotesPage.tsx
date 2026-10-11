@@ -59,7 +59,7 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
+    <div className="mx-auto max-w-3xl space-y-4">
       <div className="flex items-center gap-2">
         <BookOpenText className="size-5 text-primary" />
         <h1 className="text-lg font-bold">追番日记</h1>

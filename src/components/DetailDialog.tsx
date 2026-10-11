@@ -23,7 +23,7 @@ import {
 import { CoverImage } from '@/components/CoverImage'
 import { useConfirm } from '@/components/ConfirmProvider'
 import { fetchSubject } from '@/lib/bangumi'
-import { weekdayLabel } from '@/lib/season'
+import { weekdayLabel, weekdayOf } from '@/lib/season'
 import { useStore } from '@/store/useStore'
 import { STATUS_LABEL, type BgmSubject, type WatchStatus } from '@/types'
 
@@ -36,7 +36,7 @@ interface Props {
 }
 
 export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props) {
-  const { data, updateTracking, untrack, incProgress, decProgress, addNote, removeNote } =
+  const { data, updateTracking, patchTrackingLocal, untrack, incProgress, decProgress, addNote, removeNote } =
     useStore()
   const confirm = useConfirm()
   const [subject, setSubject] = useState<BgmSubject | null>(null)
@@ -54,10 +54,11 @@ export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props)
         setSubject(s)
         // 搜索 API 经常不返回 total_episodes/eps，导致 cachedMeta 里为 0 显示 "?"。
         // 详情 API 会返回完整数据 —— 回写 cachedMeta 让列表页也能正确显示总集数。
+        // 仅改本地（下次任意保存顺带持久化），避免"打开弹窗"就触发一次 GitHub 写入
         if (tracking) {
           const fetchedTotal = s.total_episodes || s.eps || 0
           if (fetchedTotal > 0 && tracking.cachedMeta.totalEpisodes === 0) {
-            updateTracking(subjectId, {
+            patchTrackingLocal(subjectId, {
               cachedMeta: { ...tracking.cachedMeta, totalEpisodes: fetchedTotal },
             })
           }
@@ -75,7 +76,8 @@ export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props)
   const cover =
     info?.images?.large || info?.images?.common || tracking?.cachedMeta.cover || ''
   const total = info?.total_episodes || info?.eps || tracking?.cachedMeta.totalEpisodes || 0
-  const weekday = tracking?.cachedMeta.airWeekday ?? null
+  // 优先用缓存的放送星期；缺失时从首播日期推算（列表卡片同款算法）
+  const weekday = tracking?.cachedMeta.airWeekday ?? (info?.date ? weekdayOf(info.date) : null)
 
   const notes = tracking?.notes ?? []
   // 兼容旧数据：尚未迁移时把 comment 当作一条吐槽展示

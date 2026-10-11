@@ -121,12 +121,12 @@ export default function SeasonPage() {
           </SelectContent>
         </Select>
 
-        <div className="relative min-w-40 flex-1 sm:max-w-56 sm:flex-none">
+        <div className="relative min-w-40 flex-1 sm:max-w-64 sm:flex-none">
           <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索本季番剧（中/日文名）"
+            placeholder="搜索番剧（中/日文名）"
             className="w-full pl-8 pr-8"
           />
           {query && (
@@ -244,7 +244,7 @@ export default function SeasonPage() {
                       已追 · {STATUS_LABEL[tracked.status]}
                     </Button>
                   ) : (
-                    <Button size="sm" className="w-full" onClick={() => handleTrack(s)}>
+                    <Button size="sm" variant="secondary" className="w-full" onClick={() => handleTrack(s)}>
                       <Plus className="size-3.5" /> 追这部
                     </Button>
                   )}

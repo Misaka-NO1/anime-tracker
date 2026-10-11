@@ -36,6 +36,8 @@ interface StoreState {
   track: (item: TrackingItem) => void
   untrack: (subjectId: number) => void
   updateTracking: (subjectId: number, patch: Partial<TrackingItem>) => void
+  /** 仅更新本地的元数据修正:不 bump updatedAt、不入保存队列,下次任意保存时顺带持久化 */
+  patchTrackingLocal: (subjectId: number, patch: Partial<TrackingItem>) => void
   setStatus: (subjectId: number, status: WatchStatus) => void
   /** +1 进度；返回是否触达总集数 */
   incProgress: (subjectId: number) => boolean
@@ -163,6 +165,17 @@ export const useStore = create<StoreState>((set, get) => {
       })),
 
     setStatus: (subjectId, status) => get().updateTracking(subjectId, { status }),
+
+    patchTrackingLocal: (subjectId, patch) => {
+      set({
+        data: {
+          ...get().data,
+          tracking: get().data.tracking.map((t) =>
+            t.subjectId === subjectId ? { ...t, ...patch } : t,
+          ),
+        },
+      })
+    },
 
     incProgress: (subjectId) => {
       const item = get().data.tracking.find((t) => t.subjectId === subjectId)

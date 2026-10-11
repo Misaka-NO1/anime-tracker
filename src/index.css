@@ -80,7 +80,7 @@
     --muted-foreground: 240 4% 34%;
   }
   html.has-bg.dark {
-    --muted-foreground: 240 5% 74%;
+    --muted-foreground: 240 5% 78%;
   }
 }
 
@@ -236,5 +236,26 @@
   html.has-bg.dark [data-slot='popover-content'] {
     background: rgba(28, 28, 34, 0.88);
     border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  /* 输入框/下拉触发器默认透明底，叠在自定义背景图或玻璃上时
+     占位符与文字会直接压在花纹图上——给一层最低不透明底色保证可读 */
+  html.glass [data-slot='input'],
+  html.has-bg [data-slot='input'],
+  html.glass [data-slot='select-trigger'],
+  html.has-bg [data-slot='select-trigger'] {
+    background: rgba(255, 255, 255, 0.55);
+  }
+  html.glass.dark [data-slot='input'],
+  html.has-bg.dark [data-slot='input'],
+  html.glass.dark [data-slot='select-trigger'],
+  html.has-bg.dark [data-slot='select-trigger'] {
+    background: rgba(26, 26, 32, 0.6);
+  }
+
+  /* 暗色玻璃/背景图下进度条轨道要有可见底色，否则细条几乎隐形 */
+  html.glass.dark [data-slot='progress'],
+  html.has-bg.dark [data-slot='progress'] {
+    background: rgba(255, 255, 255, 0.15);
   }
 }

@@ -64,7 +64,7 @@ export default function CalendarPage() {
 
               <div className="space-y-2">
                 {items.length === 0 ? (
-                  <p className="py-4 text-center text-xs text-muted-foreground/60">—</p>
+                  <p className="py-4 text-center text-xs text-muted-foreground/60">无更新</p>
                 ) : (
                   items.map((t) => {
                     const total = t.cachedMeta.totalEpisodes

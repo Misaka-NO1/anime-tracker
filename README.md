@@ -15,7 +15,7 @@
 
 > **🪟 Windows 用户**：直接在 [Releases](https://github.com/Misaka-NO1/anime-tracker/releases) 下载最新 `anime-tracker-x.y.z-win.exe`，双击即装即用（如遇 SmartScreen 提示，点「更多信息 → 仍要运行」）。然后从第 2 步开始配置。
 >
-> **🍎 macOS 用户**：下载 `anime-tracker-x.y.z-mac.zip`，解压后把「追番日程表」拖入「应用程序」。
+> **🍎 macOS 用户**：下载 `anime-tracker-x.y.z-mac.dmg`（打开后把「追番日程表」拖入「应用程序」），或下载 `anime-tracker-x.y.z-mac.zip` 解压使用。
 
 1. **获取应用**：桌面端从 [Releases](https://github.com/Misaka-NO1/anime-tracker/releases) 下载安装包；也可 Fork 或 Clone 本仓库本地运行，或部署到 GitHub Pages（见下）
 2. **建私有数据仓库**：GitHub 新建一个 **Private** 仓库（如 `anime-tracker-data`），无需任何文件

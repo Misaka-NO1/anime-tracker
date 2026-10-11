@@ -63,7 +63,7 @@ export default function WatchingPage() {
     const total = item.cachedMeta.totalEpisodes
     const percent = total > 0 ? Math.min(100, Math.round((item.progress / total) * 100)) : 0
     return (
-      <Card key={item.subjectId} className="flex gap-3 p-3">
+      <Card key={item.subjectId} className="flex flex-row gap-3 p-3">
         <button onClick={() => setDetailId(item.subjectId)} className="shrink-0">
           <CoverImage
             src={item.cachedMeta.cover}

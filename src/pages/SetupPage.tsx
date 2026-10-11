@@ -111,6 +111,11 @@ export default function SetupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {config && (
+            <p className="text-xs text-muted-foreground">
+              已连接：{config.owner}/{config.repo}
+            </p>
+          )}
           <div className="space-y-2">
             <Label htmlFor="token">GitHub Token（fine-grained PAT）</Label>
             <Input
@@ -195,7 +200,7 @@ export default function SetupPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <Label>遮罩浓度</Label>
-                <span className="text-muted-foreground">{Math.round(overlay * 100)}%</span>
+                <span className="text-muted-foreground">{Math.round(overlay * 100)}% / 45–90%</span>
               </div>
               <Slider
                 value={[Math.round(overlay * 100)]}
@@ -213,7 +218,7 @@ export default function SetupPage() {
           <div className="space-y-2 border-t pt-3">
             <div className="flex items-center justify-between text-sm">
               <Label>卡片不透明度</Label>
-              <span className="text-muted-foreground">{Math.round(cardAlpha * 100)}%</span>
+                <span className="text-muted-foreground">{Math.round(cardAlpha * 100)}% / 50–95%</span>
             </div>
             <Slider
               value={[Math.round(cardAlpha * 100)]}
@@ -227,7 +232,7 @@ export default function SetupPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <Label>弹窗不透明度</Label>
-              <span className="text-muted-foreground">{Math.round(dialogAlpha * 100)}%</span>
+                <span className="text-muted-foreground">{Math.round(dialogAlpha * 100)}% / 55–95%</span>
             </div>
             <Slider
               value={[Math.round(dialogAlpha * 100)]}

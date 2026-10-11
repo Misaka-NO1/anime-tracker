@@ -45,7 +45,7 @@ function NoteInput({ value, onCommit }: { value: string; onCommit: (v: string) =
 
   return (
     <Input
-      className="mt-1 h-8 text-xs text-muted-foreground"
+      className="mt-1 h-8 text-xs"
       placeholder="备注…"
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
@@ -73,6 +73,7 @@ export default function BacklogPage() {
     const total = parseInt(eps, 10)
     if (!title.trim() || !Number.isFinite(total) || total <= 0) return
     addBacklog({ title: title.trim(), totalEpisodes: total, progress: 0, note: note.trim() })
+    toast.success(`已添加《${title.trim()}》到补旧番`)
     setTitle('')
     setEps('')
     setNote('')

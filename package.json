@@ -30,7 +30,10 @@
       "repo": "anime-tracker"
     },
     "mac": {
-      "target": "zip",
+      "target": [
+        "zip",
+        "dmg"
+      ],
       "icon": "icon.icns"
     },
     "win": {
