@@ -5,11 +5,12 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { useColorScheme } from "@/hooks/useColorScheme"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  // 跟随系统主题，与 html.dark（useColorScheme 同源）保持一致
+  const theme = useColorScheme()
 
   return (
     <Sonner

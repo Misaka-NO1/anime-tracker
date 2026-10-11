@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
+import { ConfirmProvider } from '@/components/ConfirmProvider'
 import { Layout } from '@/components/Layout'
 import SetupPage from '@/pages/SetupPage'
 import SeasonPage from '@/pages/SeasonPage'
@@ -10,7 +11,7 @@ import NotesPage from '@/pages/NotesPage'
 
 export default function App() {
   return (
-    <>
+    <ConfirmProvider>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/season" replace />} />
@@ -24,6 +25,6 @@ export default function App() {
         </Route>
       </Routes>
       <Toaster richColors position="top-center" />
-    </>
+    </ConfirmProvider>
   )
 }

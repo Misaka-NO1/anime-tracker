@@ -17,7 +17,8 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     autoHideMenuBar: true,
-    // 隐藏系统标题栏，由页面自绘
+    // 标题栏：macOS 用 hiddenInset（原生红绿灯悬浮在内容上，透出系统液态玻璃）；
+    // Windows 用 hidden（页面自绘控制按钮 + Mica）
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
     // 系统级玻璃材质；不支持的平台保持纯色背景
     ...(isMac ? { vibrancy: 'sidebar' } : isWin11 ? { backgroundMaterial: 'mica' } : {}),

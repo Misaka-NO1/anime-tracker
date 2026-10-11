@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { testConnection, type TestResult } from '@/lib/github'
 import {
+  MIN_OVERLAY,
   clearBackground,
   setBackgroundFromFile,
   setBackgroundOverlay,
@@ -24,10 +25,12 @@ import {
   setDialogAlpha,
 } from '@/lib/background'
 import { useBackground } from '@/hooks/useBackground'
+import { useConfirm } from '@/components/ConfirmProvider'
 import { useStore } from '@/store/useStore'
 
 export default function SetupPage() {
   const { config, setConfig, clearConfig, loadData } = useStore()
+  const confirm = useConfirm()
   const navigate = useNavigate()
 
   const [token, setToken] = useState(config?.githubToken ?? '')
@@ -72,8 +75,15 @@ export default function SetupPage() {
     }
   }
 
-  const handleClear = () => {
-    if (window.confirm('确定清除本地配置？Token 将从浏览器中移除（数据仓库不受影响）。')) {
+  const handleClear = async () => {
+    if (
+      await confirm({
+        title: '清除本地配置？',
+        description: 'Token 将从浏览器中移除（数据仓库不受影响）。',
+        confirmText: '清除',
+        destructive: true,
+      })
+    ) {
       clearConfig()
       setToken('')
       setOwner('')
@@ -188,7 +198,7 @@ export default function SetupPage() {
               </div>
               <Slider
                 value={[Math.round(overlay * 100)]}
-                min={20}
+                min={Math.round(MIN_OVERLAY * 100)}
                 max={90}
                 step={5}
                 onValueChange={([v]) => setBackgroundOverlay(v / 100)}
@@ -206,7 +216,7 @@ export default function SetupPage() {
             </div>
             <Slider
               value={[Math.round(cardAlpha * 100)]}
-              min={20}
+              min={50}
               max={95}
               step={5}
               onValueChange={([v]) => setCardAlpha(v / 100)}
@@ -220,7 +230,7 @@ export default function SetupPage() {
             </div>
             <Slider
               value={[Math.round(dialogAlpha * 100)]}
-              min={20}
+              min={55}
               max={95}
               step={5}
               onValueChange={([v]) => setDialogAlpha(v / 100)}

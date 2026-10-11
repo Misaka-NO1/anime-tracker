@@ -1,20 +1,61 @@
 // ===== 补旧番页：手动增删改 + 从 Bangumi 搜索添加，不进放送表 =====
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Loader2, Minus, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { CoverImage } from '@/components/CoverImage'
+import { useConfirm } from '@/components/ConfirmProvider'
 import { searchSubjects } from '@/lib/bangumi'
 import { useStore } from '@/store/useStore'
 import type { BgmSubject } from '@/types'
 
+/** 备注输入：本地即时回显，停顿 500ms 后才落库（避免每敲一个字符就同步一次 GitHub） */
+function NoteInput({ value, onCommit }: { value: string; onCommit: (v: string) => void }) {
+  const [draft, setDraft] = useState(value)
+  const committed = useRef(value)
+
+  // 外部值变化（如同步回写）时覆盖本地草稿
+  useEffect(() => {
+    if (committed.current !== value) {
+      committed.current = value
+      setDraft(value)
+    }
+  }, [value])
+
+  useEffect(() => {
+    if (draft === committed.current) return
+    const t = setTimeout(() => {
+      committed.current = draft
+      onCommit(draft)
+    }, 500)
+    return () => clearTimeout(t)
+  }, [draft, onCommit])
+
+  return (
+    <Input
+      className="mt-1 h-8 text-xs text-muted-foreground"
+      placeholder="备注…"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+    />
+  )
+}
+
 export default function BacklogPage() {
   const { data, addBacklog, updateBacklog, removeBacklog, config } = useStore()
+  const confirm = useConfirm()
 
   // 手动添加表单
   const [title, setTitle] = useState('')
@@ -146,6 +187,7 @@ export default function BacklogPage() {
                 placeholder="钢之炼金术师FA"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
               />
             </div>
             <div className="w-28 space-y-1.5">
@@ -157,6 +199,7 @@ export default function BacklogPage() {
                 placeholder="64"
                 value={eps}
                 onChange={(e) => setEps(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
               />
             </div>
             <div className="min-w-40 flex-1 space-y-1.5">
@@ -166,6 +209,7 @@ export default function BacklogPage() {
                 placeholder="补到fa篇"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
               />
             </div>
             <Button onClick={handleAdd} disabled={!title.trim() || !eps}>
@@ -176,9 +220,15 @@ export default function BacklogPage() {
       </Card>
 
       {data.backlog.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">
-          补旧番列表是空的。这里的数据不进入放送表。
-        </div>
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Plus />
+            </EmptyMedia>
+            <EmptyTitle>补旧番列表是空的</EmptyTitle>
+            <EmptyDescription>从上方 Bangumi 搜索添加，或手动录入；这里的数据不进入放送表。</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div className="space-y-3">
           {data.backlog.map((b) => {
@@ -198,11 +248,9 @@ export default function BacklogPage() {
                   )}
                   <div className="min-w-40 flex-1">
                     <p className="font-medium">{b.title}</p>
-                    <Input
-                      className="mt-1 h-7 text-xs text-muted-foreground"
-                      placeholder="备注…"
+                    <NoteInput
                       value={b.note}
-                      onChange={(e) => updateBacklog(b.id, { note: e.target.value })}
+                      onCommit={(v) => updateBacklog(b.id, { note: v })}
                     />
                   </div>
 
@@ -243,7 +291,7 @@ export default function BacklogPage() {
                     </Button>
                   </div>
 
-                  <div className="w-32">
+                  <div className="w-24 sm:w-32">
                     {hasTotal ? (
                       <>
                         <Progress value={percent} className="h-1.5" />
@@ -258,8 +306,17 @@ export default function BacklogPage() {
                     size="sm"
                     variant="ghost"
                     className="text-destructive"
-                    onClick={() => {
-                      if (window.confirm(`确定删除《${b.title}》？`)) removeBacklog(b.id)
+                    aria-label={`删除《${b.title}》`}
+                    onClick={async () => {
+                      if (
+                        await confirm({
+                          title: `删除《${b.title}》？`,
+                          destructive: true,
+                          confirmText: '删除',
+                        })
+                      ) {
+                        removeBacklog(b.id)
+                      }
                     }}
                   >
                     <Trash2 className="size-4" />

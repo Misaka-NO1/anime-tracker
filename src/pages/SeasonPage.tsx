@@ -2,9 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, RefreshCw, Search, Star, X } from 'lucide-react'
+import { Plus, RefreshCw, Search, Star, TriangleAlert, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -114,17 +121,17 @@ export default function SeasonPage() {
           </SelectContent>
         </Select>
 
-        <div className="relative">
+        <div className="relative min-w-40 flex-1 sm:max-w-56 sm:flex-none">
           <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索本季番剧（中/日文名）"
-            className="w-56 pl-8 pr-8"
+            className="w-full pl-8 pr-8"
           />
           {query && (
             <button
-              className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute top-1/2 right-1 -translate-y-1/2 rounded p-1.5 text-muted-foreground hover:text-foreground"
               onClick={() => setQuery('')}
               aria-label="清除搜索"
             >
@@ -133,7 +140,7 @@ export default function SeasonPage() {
           )}
         </div>
 
-        <span className="text-sm text-muted-foreground">
+        <span className="hidden text-sm text-muted-foreground sm:inline">
           {result
             ? query.trim()
               ? `匹配 ${filteredItems.length} / ${result.items.length} 部`
@@ -155,25 +162,44 @@ export default function SeasonPage() {
       </div>
 
       {error && !result && (
-        <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-          加载失败：{error}。可点击「刷新」重试。
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+          <span className="flex items-start gap-2">
+            <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+            加载失败：{error}
+          </span>
+          <Button variant="outline" size="sm" onClick={() => setReloadFlag((f) => f + 1)} disabled={loading}>
+            <RefreshCw className={loading ? 'size-3.5 animate-spin' : 'size-3.5'} />
+            重试
+          </Button>
         </div>
       )}
 
       {loading && !result ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-[3/5] w-full rounded-lg" />
+            <Skeleton key={i} className="aspect-[3/4] w-full rounded-lg" />
           ))}
         </div>
       ) : result && result.items.length === 0 ? (
-        <div className="py-20 text-center text-muted-foreground">
-          该季度暂无数据，试试切换其他季度。
-        </div>
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Star />
+            </EmptyMedia>
+            <EmptyTitle>该季度暂无数据</EmptyTitle>
+            <EmptyDescription>试试切换其他季度。</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : filteredItems.length === 0 ? (
-        <div className="py-20 text-center text-muted-foreground">
-          没有匹配「{query.trim()}」的番剧，换个关键词试试。
-        </div>
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Search />
+            </EmptyMedia>
+            <EmptyTitle>没有匹配「{query.trim()}」的番剧</EmptyTitle>
+            <EmptyDescription>换个关键词试试。</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {filteredItems.map((s) => {
@@ -195,7 +221,7 @@ export default function SeasonPage() {
                   )}
                   {s.rating?.score ? (
                     <Badge variant="secondary" className="absolute top-2 right-2 gap-0.5">
-                      <Star className="size-3 fill-yellow-400 text-yellow-400" />
+                      <Star className="star-icon size-3" />
                       {s.rating.score.toFixed(1)}
                     </Badge>
                   ) : null}

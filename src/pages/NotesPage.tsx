@@ -4,6 +4,13 @@ import { useMemo, useState } from 'react'
 import { BookOpenText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { CoverImage } from '@/components/CoverImage'
 import { DetailDialog } from '@/components/DetailDialog'
 import { useStore } from '@/store/useStore'
@@ -60,16 +67,31 @@ export default function NotesPage() {
       </div>
 
       {entries.length === 0 ? (
-        <div className="py-20 text-center text-muted-foreground">
-          还没有写过感想。打开任意一部在追的番，在详情里「记下」一条吧。
-        </div>
+        <Empty className="py-16">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <BookOpenText />
+            </EmptyMedia>
+            <EmptyTitle>还没有写过感想</EmptyTitle>
+            <EmptyDescription>打开任意一部在追的番，在详情里「记下」一条吧。</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div className="space-y-3">
           {entries.map((e) => (
             <Card
               key={e.id}
-              className="flex cursor-pointer gap-3 p-3 transition-shadow hover:shadow-md"
+              role="button"
+              tabIndex={0}
+              aria-label={`查看《${e.anime.cachedMeta.nameCn}》详情`}
+              className="flex cursor-pointer gap-3 p-3 text-left transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               onClick={() => setDetailId(e.anime.subjectId)}
+              onKeyDown={(ev) => {
+                if (ev.key === 'Enter' || ev.key === ' ') {
+                  ev.preventDefault()
+                  setDetailId(e.anime.subjectId)
+                }
+              }}
             >
               <CoverImage
                 src={e.anime.cachedMeta.cover}

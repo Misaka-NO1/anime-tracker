@@ -4,8 +4,10 @@
 import { useEffect } from 'react'
 import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { Clapperboard, Settings, CloudUpload, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { TitleBarControls } from '@/components/TitleBar'
 import { useBackground } from '@/hooks/useBackground'
+import { useColorScheme } from '@/hooks/useColorScheme'
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
 
@@ -25,8 +27,9 @@ export function Layout() {
   const desktop = window.desktop
   const glass = !!desktop?.glass
   const isMac = desktop?.platform === 'darwin'
-  // 自定义背景图（设置页可更换），overlay 为磨砂白遮罩浓度（可调）
+  // 自定义背景图（设置页可更换），overlay 为磨砂遮罩浓度（可调）；暗色模式下遮罩改用黑色
   const { image: bg, overlay, cardAlpha, dialogAlpha } = useBackground()
+  const scheme = useColorScheme()
 
   // 把外观偏好同步为 CSS 变量与 has-bg 标记（设置页拖滑杆实时生效）
   useEffect(() => {
@@ -42,6 +45,11 @@ export function Layout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config?.githubToken, config?.owner, config?.repo])
 
+  // 保存失败：用 toast 展示完整错误（顶栏小红字会截断，且容易 unnoticed）
+  useEffect(() => {
+    if (saveError) toast.error(`保存失败：${saveError}`)
+  }, [saveError])
+
   if (!config && location.pathname !== '/setup') {
     return <Navigate to="/setup" replace />
   }
@@ -51,12 +59,15 @@ export function Layout() {
       className={cn('min-h-screen', !glass && !bg && 'bg-background')}
       style={
         bg
-          ? {
-              backgroundImage: `linear-gradient(rgba(255, 255, 255, ${overlay}), rgba(255, 255, 255, ${overlay})), url("${bg}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundAttachment: 'fixed',
-            }
+          ? (() => {
+              const rgb = scheme === 'dark' ? '0, 0, 0' : '255, 255, 255'
+              return {
+                backgroundImage: `linear-gradient(rgba(${rgb}, ${overlay}), rgba(${rgb}, ${overlay})), url("${bg}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+              }
+            })()
           : undefined
       }
     >
@@ -107,18 +118,27 @@ export function Layout() {
           </nav>
 
           <div
+            aria-live="polite"
             className={cn(
               'flex items-center gap-2 text-xs text-muted-foreground',
               desktop && 'app-region-no-drag',
             )}
           >
-            {loading && <Loader2 className="size-3.5 animate-spin" />}
+            {loading && (
+              <span className="flex items-center gap-1">
+                <Loader2 className="size-3.5 animate-spin" /> 加载中
+              </span>
+            )}
             {saving && (
               <span className="flex items-center gap-1">
                 <CloudUpload className="size-3.5 animate-pulse" /> 保存中
               </span>
             )}
-            {saveError && <span className="max-w-48 truncate text-destructive">{saveError}</span>}
+            {saveError && (
+              <span className="text-destructive" role="alert">
+                保存失败
+              </span>
+            )}
             <NavLink
               to="/setup"
               className={({ isActive }) =>

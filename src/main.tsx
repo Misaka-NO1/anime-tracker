@@ -10,6 +10,13 @@ if (window.desktop) {
   if (window.desktop.glass) document.documentElement.classList.add('glass')
 }
 
+// 暗色模式跟随系统：为 html 维护 dark 类（tailwind darkMode: ["class"] 与玻璃暗色分支都依赖它）
+const darkMq = window.matchMedia('(prefers-color-scheme: dark)')
+const applyDark = (e: MediaQueryList | MediaQueryListEvent) =>
+  document.documentElement.classList.toggle('dark', e.matches)
+applyDark(darkMq)
+darkMq.addEventListener('change', applyDark)
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>

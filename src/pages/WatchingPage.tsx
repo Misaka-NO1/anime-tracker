@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CoverImage } from '@/components/CoverImage'
 import { DetailDialog } from '@/components/DetailDialog'
+import { useConfirm } from '@/components/ConfirmProvider'
 import { weekdayLabel } from '@/lib/season'
 import { useStore } from '@/store/useStore'
 import { STATUS_LABEL, type TrackingItem, type WatchStatus } from '@/types'
@@ -26,6 +27,7 @@ const TAB_ORDER: WatchStatus[] = ['watching', 'want', 'watched', 'dropped']
 
 export default function WatchingPage() {
   const { data, incProgress, decProgress, updateTracking, config } = useStore()
+  const confirm = useConfirm()
   const navigate = useNavigate()
   const [detailId, setDetailId] = useState<number | null>(null)
   const [query, setQuery] = useState('')
@@ -42,9 +44,16 @@ export default function WatchingPage() {
     )
   }
 
-  const handleInc = (item: TrackingItem) => {
+  const handleInc = async (item: TrackingItem) => {
     const reached = incProgress(item.subjectId)
-    if (reached && window.confirm(`《${item.cachedMeta.nameCn}》已到达总集数，是否标记为「看完」？`)) {
+    if (
+      reached &&
+      (await confirm({
+        title: `《${item.cachedMeta.nameCn}》已到达总集数`,
+        description: '是否标记为「看完」？',
+        confirmText: '标记为看完',
+      }))
+    ) {
       updateTracking(item.subjectId, { status: 'watched' })
       toast.success('已标记为看完 🎉')
     }
@@ -65,7 +74,7 @@ export default function WatchingPage() {
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <button
-            className="truncate text-left text-sm font-medium hover:underline"
+            className="line-clamp-2 min-h-10 text-left text-sm font-medium hover:underline"
             onClick={() => setDetailId(item.subjectId)}
             title={item.cachedMeta.nameCn}
           >
@@ -81,7 +90,7 @@ export default function WatchingPage() {
             )}
             {item.myRating > 0 && (
               <span className="flex items-center gap-0.5">
-                · <Star className="size-3 fill-yellow-400 text-yellow-400" />
+                · <Star className="star-icon size-3" />
                 {item.myRating}
               </span>
             )}
@@ -148,7 +157,7 @@ export default function WatchingPage() {
             />
             {query && (
               <button
-                className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute top-1/2 right-1 -translate-y-1/2 rounded p-1.5 text-muted-foreground hover:text-foreground"
                 onClick={() => setQuery('')}
                 aria-label="清除搜索"
               >

@@ -18,7 +18,7 @@ export function TitleBarControls() {
   return (
     <div className="ml-1 flex items-center self-stretch">
       <button
-        className={cn(btn, 'hover:bg-black/10 hover:text-foreground')}
+        className={cn(btn, 'rounded hover:bg-black/10 dark:hover:bg-white/10 hover:text-foreground')}
         onClick={() => desktop.minimize()}
         aria-label="最小化"
         title="最小化"
@@ -26,7 +26,7 @@ export function TitleBarControls() {
         <Minus className="size-4" />
       </button>
       <button
-        className={cn(btn, 'hover:bg-black/10 hover:text-foreground')}
+        className={cn(btn, 'rounded hover:bg-black/10 dark:hover:bg-white/10 hover:text-foreground')}
         onClick={() => desktop.toggleMaximize()}
         aria-label={maximized ? '还原' : '最大化'}
         title={maximized ? '还原' : '最大化'}
@@ -34,7 +34,7 @@ export function TitleBarControls() {
         {maximized ? <Copy className="size-3.5" /> : <Square className="size-3.5" />}
       </button>
       <button
-        className={cn(btn, 'hover:bg-destructive hover:text-destructive-foreground')}
+        className={cn(btn, 'rounded hover:bg-destructive hover:text-destructive-foreground')}
         onClick={() => desktop.close()}
         aria-label="关闭"
         title="关闭"

@@ -1,8 +1,16 @@
 // ===== 放送表页：周一~周日七列，今天高亮 =====
 
 import { useState } from 'react'
+import { CalendarDays } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { CoverImage } from '@/components/CoverImage'
 import { DetailDialog } from '@/components/DetailDialog'
 import { WEEKDAY_LABELS } from '@/lib/season'
@@ -30,7 +38,9 @@ export default function CalendarPage() {
         只显示「在看 / 想看」的番；补旧番区不进入放送表。
       </p>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      {/* 移动端横向滚动完整一周：保证星期顺序与"今天"列位置稳定可预期 */}
+      <div className="-mx-4 overflow-x-auto px-4 pb-1">
+        <div className="grid min-w-[900px] grid-cols-7 gap-3">
         {WEEKDAY_LABELS.map((label, i) => {
           const weekday = i + 1
           const items = active.filter((t) => t.cachedMeta.airWeekday === weekday)
@@ -61,8 +71,17 @@ export default function CalendarPage() {
                     return (
                       <Card
                         key={t.subjectId}
-                        className="cursor-pointer p-2 transition-shadow hover:shadow-md"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`查看《${t.cachedMeta.nameCn}》详情`}
+                        className="cursor-pointer p-2 text-left transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         onClick={() => setDetailId(t.subjectId)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setDetailId(t.subjectId)
+                          }
+                        }}
                       >
                         <CoverImage
                           src={t.cachedMeta.cover}
@@ -83,12 +102,19 @@ export default function CalendarPage() {
             </div>
           )
         })}
+        </div>
       </div>
 
       {active.length === 0 && (
-        <div className="py-16 text-center text-muted-foreground">
-          还没有在看/想看的番，去「本季新番」添加几部吧。
-        </div>
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CalendarDays />
+            </EmptyMedia>
+            <EmptyTitle>还没有在看 / 想看的番</EmptyTitle>
+            <EmptyDescription>去「本季新番」添加几部吧。</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       )}
 
       <DetailDialog

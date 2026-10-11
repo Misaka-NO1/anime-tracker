@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { CoverImage } from '@/components/CoverImage'
+import { useConfirm } from '@/components/ConfirmProvider'
 import { fetchSubject } from '@/lib/bangumi'
 import { weekdayLabel } from '@/lib/season'
 import { useStore } from '@/store/useStore'
@@ -37,6 +38,7 @@ interface Props {
 export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props) {
   const { data, updateTracking, untrack, incProgress, decProgress, addNote, removeNote } =
     useStore()
+  const confirm = useConfirm()
   const [subject, setSubject] = useState<BgmSubject | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
@@ -91,10 +93,17 @@ export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props)
           ]
         : []
 
-  const handleInc = () => {
+  const handleInc = async () => {
     if (!subjectId) return
     const reached = incProgress(subjectId)
-    if (reached && window.confirm('已到达总集数，是否标记为「看完」？')) {
+    if (
+      reached &&
+      (await confirm({
+        title: '已到达总集数',
+        description: '是否标记为「看完」？',
+        confirmText: '标记为看完',
+      }))
+    ) {
       updateTracking(subjectId, { status: 'watched' })
       toast.success('已标记为看完 🎉')
     }
@@ -142,7 +151,7 @@ export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props)
                 <div className="flex flex-wrap items-center gap-2">
                   {info?.rating?.score ? (
                     <Badge variant="secondary" className="gap-1">
-                      <Star className="size-3 fill-yellow-400 text-yellow-400" />
+                      <Star className="star-icon size-3" />
                       {info.rating.score.toFixed(1)}
                       {info.rating.total > 0 && (
                         <span className="text-muted-foreground">({info.rating.total}人)</span>
@@ -266,15 +275,21 @@ export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props)
                       </div>
                       {n.id !== 'legacy-comment' && (
                         <button
-                          className="text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
-                          title="删除这条"
-                          onClick={() => {
-                            if (window.confirm('删除这条感想？')) {
+                          className="rounded p-1 text-muted-foreground/50 transition-opacity hover:text-destructive focus-visible:opacity-100 focus-visible:outline-2 group-hover:opacity-100 sm:opacity-0"
+                          aria-label="删除这条感想"
+                          onClick={async () => {
+                            if (
+                              await confirm({
+                                title: '删除这条感想？',
+                                destructive: true,
+                                confirmText: '删除',
+                              })
+                            ) {
                               removeNote(tracking.subjectId, n.id)
                             }
                           }}
                         >
-                          <Trash2 className="size-3.5" />
+                          <Trash2 className="size-4" />
                         </button>
                       )}
                     </div>
@@ -288,8 +303,15 @@ export function DetailDialog({ subjectId, fallback, open, onOpenChange }: Props)
                 size="sm"
                 variant="ghost"
                 className="text-destructive"
-                onClick={() => {
-                  if (window.confirm(`确定不再追《${name}》？记录将被删除。`)) {
+                onClick={async () => {
+                  if (
+                    await confirm({
+                      title: `不再追《${name}》？`,
+                      description: '这部番的所有记录（进度、评分、感想）将被删除。',
+                      confirmText: '取消追番',
+                      destructive: true,
+                    })
+                  ) {
                     untrack(tracking.subjectId)
                     onOpenChange(false)
                   }

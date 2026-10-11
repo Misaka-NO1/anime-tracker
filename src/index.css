@@ -72,18 +72,50 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* 有自定义背景图时：半透遮罩叠花纹图片会吃掉对比度，
+     把灰色小字加深一档（暗色模式反向提亮）——
+     搜索框占位符、页面说明小字、顶栏状态字都走这个变量，一处生效 */
+  html.has-bg {
+    --muted-foreground: 240 4% 34%;
+  }
+  html.has-bg.dark {
+    --muted-foreground: 240 5% 74%;
+  }
 }
 
 /* ===== 桌面端（Electron）无边框窗口 ===== */
 @layer base {
-  /* Win11 Mica / macOS vibrancy：页面用八成不透的磨砂白，
-     系统材质只隐约透出色调——避免深色壁纸上灰字看不清、白卡片刺眼 */
+  /* Win11 Mica / macOS vibrancy：body 保持全透明，系统材质才能真正透出。
+     页面的八成磨砂白改铺在 body::before 上，且只从标题栏下沿（h-14 = 3.5rem）
+     开始——之前整张白底垫在标题栏后面，标题栏透明度调得再低也会被叠回 ~86% 白，
+     视觉上毫无区别。暗色模式（html.dark，main.tsx 跟随系统）换深色磨砂 */
   html.glass body {
+    background: transparent;
+  }
+  html.glass body::before {
+    content: '';
+    position: fixed;
+    top: 3.5rem;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    pointer-events: none;
     background: rgba(255, 255, 255, 0.82);
+  }
+  html.glass.dark body::before {
+    background: rgba(24, 24, 30, 0.85);
   }
 }
 
 @layer components {
+  /* 评分/我的评分星星：统一走主题令牌，避免散落的硬编码 Tailwind 色板 */
+  .star-icon {
+    color: hsl(38 92% 50%);
+    fill: hsl(38 92% 50%);
+  }
+
   /* 可拖拽标题栏区域 */
   .app-region-drag {
     -webkit-app-region: drag;
@@ -92,37 +124,78 @@
     -webkit-app-region: no-drag;
   }
 
-  /* 液态玻璃标题栏：较高不透明度保证文字可读 + 背景模糊 + 顶部高光描边 */
+  /* 液态玻璃标题栏：刻意压低不透明度，让 macOS vibrancy / Win11 Mica
+     系统材质透出来；文字可读性靠 blur(24px) 的磨砂保证。
+     有自定义背景图时下方会用更实的覆盖样式（图片花纹会破坏可读性） */
   .glass-header {
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.78) 0%,
-      rgba(255, 255, 255, 0.52) 45%,
-      rgba(255, 255, 255, 0.3) 100%
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.32) 45%,
+      rgba(255, 255, 255, 0.2) 100%
     );
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.5);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
   }
+  html.glass.dark .glass-header,
+  html.has-bg.dark .glass-header {
+    background: linear-gradient(
+      135deg,
+      rgba(28, 28, 34, 0.64) 0%,
+      rgba(28, 28, 34, 0.48) 45%,
+      rgba(28, 28, 34, 0.38) 100%
+    );
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  /* 有自定义背景图时标题栏加实底（保留一点渐变玻璃感）：
+     否则 55%~78% 的半透白会让顶栏灰字与图片混在一起 */
+  html.glass.has-bg .glass-header {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.92) 45%,
+      rgba(255, 255, 255, 0.9) 100%
+    );
+  }
+  html.glass.has-bg.dark .glass-header {
+    background: linear-gradient(
+      135deg,
+      rgba(24, 24, 30, 0.96) 0%,
+      rgba(24, 24, 30, 0.93) 45%,
+      rgba(24, 24, 30, 0.91) 100%
+    );
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
 
-  /* 卡片玻璃化：半透磨砂白，透明度由设置页滑杆控制（--card-alpha）。
+  /* 卡片玻璃化：半透磨砂，透明度由设置页滑杆控制（--card-alpha），
+     并用 max() 兜底 50% 最低遮盖——拖得再低也保证正文可读。
      不加 backdrop-filter——170+ 张卡片各自模糊会掉帧，靠透明度出质感。
      桌面版（glass）与设置了自定义背景的浏览器版（has-bg）都生效 */
   html.glass [data-slot='card'],
   html.has-bg [data-slot='card'] {
-    background: rgba(255, 255, 255, var(--card-alpha, 0.5));
+    background: rgba(255, 255, 255, max(var(--card-alpha, 0.5), 0.5));
     border-color: rgba(255, 255, 255, 0.6);
     box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.04),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
+  html.glass.dark [data-slot='card'],
+  html.has-bg.dark [data-slot='card'] {
+    background: rgba(26, 26, 32, max(var(--card-alpha, 0.5), 0.5));
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
 
   /* 弹窗玻璃化：半透 + 真模糊（弹窗同时只开一个，性能无压力），
-     透明度由设置页滑杆控制（--dialog-alpha） */
+     透明度由设置页滑杆控制（--dialog-alpha），兜底 55% 保证模态内容可读 */
   html.glass [data-slot='dialog-content'],
   html.has-bg [data-slot='dialog-content'] {
-    background: rgba(255, 255, 255, var(--dialog-alpha, 0.62));
+    background: rgba(255, 255, 255, max(var(--dialog-alpha, 0.62), 0.55));
     backdrop-filter: blur(28px) saturate(180%);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
     border-color: rgba(255, 255, 255, 0.6);
@@ -130,11 +203,19 @@
       0 8px 32px rgba(0, 0, 0, 0.12),
       inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
+  html.glass.dark [data-slot='dialog-content'],
+  html.has-bg.dark [data-slot='dialog-content'] {
+    background: rgba(26, 26, 32, max(var(--dialog-alpha, 0.62), 0.55));
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
 
-  /* 弹窗遮罩调淡并加轻模糊，背景图隐约可见 */
+  /* 弹窗遮罩：足够深以维持模态层级感，轻模糊让背景图隐约可见 */
   html.glass [data-slot='dialog-overlay'],
   html.has-bg [data-slot='dialog-overlay'] {
-    background: rgba(0, 0, 0, 0.28);
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
@@ -144,9 +225,16 @@
   html.glass [data-slot='popover-content'],
   html.has-bg [data-slot='select-content'],
   html.has-bg [data-slot='popover-content'] {
-    background: rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(20px) saturate(170%);
     -webkit-backdrop-filter: blur(20px) saturate(170%);
     border-color: rgba(255, 255, 255, 0.55);
+  }
+  html.glass.dark [data-slot='select-content'],
+  html.glass.dark [data-slot='popover-content'],
+  html.has-bg.dark [data-slot='select-content'],
+  html.has-bg.dark [data-slot='popover-content'] {
+    background: rgba(28, 28, 34, 0.88);
+    border-color: rgba(255, 255, 255, 0.12);
   }
 }

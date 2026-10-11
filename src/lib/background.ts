@@ -8,6 +8,8 @@ const DIALOG_ALPHA_KEY = 'anime-tracker-dialog-alpha'
 const BG_EVENT = 'anime-tracker-bg-changed'
 /** 默认遮罩浓度（白色不透明度）：越低背景图越清晰 */
 const DEFAULT_OVERLAY = 0.55
+/** 遮罩浓度下限：再透的花纹图片也会吃掉灰色小字的对比度，兜底 45% 白 */
+export const MIN_OVERLAY = 0.45
 /** 卡片/弹窗默认不透明度：越低越透 */
 const DEFAULT_CARD_ALPHA = 0.5
 const DEFAULT_DIALOG_ALPHA = 0.62
@@ -36,7 +38,7 @@ function writeAlpha(key: string, v: number): void {
 }
 
 export function getBackgroundOverlay(): number {
-  return readAlpha(BG_OPACITY_KEY, DEFAULT_OVERLAY)
+  return Math.max(readAlpha(BG_OPACITY_KEY, DEFAULT_OVERLAY), MIN_OVERLAY)
 }
 
 export function setBackgroundOverlay(v: number): void {
